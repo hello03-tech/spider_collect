@@ -1,0 +1,4 @@
+os.environ.setdefault('OPENAI_BASE_URL', 'http://14.103.60.158:3001/')
+os.environ.setdefault('OPENAI_API_KEY', 'sk-g1S9X6sV6rfgmpoDYNFZV9YqD8lNQyRhhPu0hXs1ay8J25Hx')
+
+os.environ.setdefault('MODEL',  "gemini-3-pro-preview")
