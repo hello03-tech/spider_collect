@@ -1,4 +1,5 @@
-__pycache__
+__pycache__/
+*.py[cod]
 node_modules/
 *.so
 .Python
@@ -22,10 +23,29 @@ MANIFEST
 local_settings.py
 db.sqlite3
 __pypackages__/
+
+# Env/secrets (do not commit)
+.env
+.env.*
+!.env.example
+
+# IDE/editor
+.idea/
+.vscode/
+
+# Test/typing/lint caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Generated data/output (crawler downloads)
+datas/
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
-

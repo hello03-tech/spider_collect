@@ -175,20 +175,55 @@ def handle_comment_info(data):
         'ip_location': ip_location,
         'pictures': pictures,
     }
+def _normalize_cell(value):
+    if isinstance(value, (list, tuple)):
+        value = ';'.join(map(str, value))
+    return norm_text(str(value))
+
+
+FIELD_CONFIG = {
+    'note': (
+        ['note_id', 'note_url', 'note_type', 'user_id', 'home_url', 'nickname', 'avatar', 'title', 'desc',
+         'liked_count', 'collected_count', 'comment_count', 'share_count', 'video_cover', 'video_addr',
+         'image_list', 'tags', 'upload_time', 'ip_location', 'style_analysis', 'style_updated_at'],
+        ['笔记id', '笔记url', '笔记类型', '用户id', '用户主页url', '昵称', '头像url', '标题', '描述',
+         '点赞数量', '收藏数量', '评论数量', '分享数量', '视频封面url', '视频地址url', '图片地址url列表', '标签',
+         '上传时间', 'ip归属地', '风格分析', '风格分析更新时间'],
+    ),
+    'user': (
+        ['user_id', 'home_url', 'nickname', 'avatar', 'red_id', 'gender', 'ip_location', 'desc',
+         'follows', 'fans', 'interaction', 'tags'],
+        ['用户id', '用户主页url', '用户名', '头像url', '小红书号', '性别', 'ip地址', '介绍', '关注数量',
+         '粉丝数量', '作品被赞和收藏数量', '标签'],
+    ),
+    'comment': (
+        ['note_id', 'note_url', 'comment_id', 'user_id', 'home_url', 'nickname', 'avatar', 'content', 'show_tags',
+         'like_count', 'upload_time', 'ip_location', 'pictures'],
+        ['笔记id', '笔记url', '评论id', '用户id', '用户主页url', '昵称', '头像url', '评论内容', '评论标签',
+         '点赞数量', '上传时间', 'ip归属地', '图片地址url列表'],
+    ),
+}
+
+
 def save_to_xlsx(datas, file_path, type='note'):
     wb = openpyxl.Workbook()
     ws = wb.active
-    if type == 'note':
-        headers = ['笔记id', '笔记url', '笔记类型', '用户id', '用户主页url', '昵称', '头像url', '标题', '描述', '点赞数量', '收藏数量', '评论数量', '分享数量', '视频封面url', '视频地址url', '图片地址url列表', '标签', '上传时间', 'ip归属地']
-    elif type == 'user':
-        headers = ['用户id', '用户主页url', '用户名', '头像url', '小红书号', '性别', 'ip地址', '介绍', '关注数量', '粉丝数量', '作品被赞和收藏数量', '标签']
-    else:
-        headers = ['笔记id', '笔记url', '评论id', '用户id', '用户主页url', '昵称', '头像url', '评论内容', '评论标签', '点赞数量', '上传时间', 'ip归属地', '图片地址url列表']
+    if type not in FIELD_CONFIG:
+        type = 'note'
+    field_keys, headers = FIELD_CONFIG[type]
     ws.append(headers)
     for data in datas:
-        data = {k: norm_text(str(v)) for k, v in data.items()}
-        ws.append(list(data.values()))
+        row = []
+        for key in field_keys:
+            row.append(_normalize_cell(data.get(key, '')))
+        ws.append(row)
     wb.save(file_path)
+    logger.info(f'数据保存至 {file_path}')
+
+
+def save_to_json(datas, file_path):
+    with open(file_path, mode='w', encoding='utf-8') as f:
+        json.dump(datas, f, ensure_ascii=False, indent=2)
     logger.info(f'数据保存至 {file_path}')
 
 def download_media(path, name, url, type):
@@ -243,6 +278,8 @@ def save_note_detail(note, path):
         f.write(f"标签: {note['tags']}\n")
         f.write(f"上传时间: {note['upload_time']}\n")
         f.write(f"ip归属地: {note['ip_location']}\n")
+        f.write(f"风格分析: {note.get('style_analysis', '未生成分析')}\n")
+        f.write(f"风格分析更新时间: {note.get('style_updated_at', '')}\n")
 
 
 

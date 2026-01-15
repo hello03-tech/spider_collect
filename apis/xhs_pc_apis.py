@@ -2,6 +2,7 @@
 import json
 import re
 import urllib
+import urllib.parse
 import requests
 from xhs_utils.xhs_util import splice_str, generate_request_params, generate_x_b3_traceid, get_common_headers
 from loguru import logger
@@ -204,10 +205,9 @@ class XHS_Apis():
         try:
             urlParse = urllib.parse.urlparse(user_url)
             user_id = urlParse.path.split("/")[-1]
-            kvs = urlParse.query.split('&')
-            kvDist = {kv.split('=')[0]: kv.split('=')[1] for kv in kvs}
-            xsec_token = kvDist['xsec_token'] if 'xsec_token' in kvDist else ""
-            xsec_source = kvDist['xsec_source'] if 'xsec_source' in kvDist else "pc_search"
+            kvDist = dict(urllib.parse.parse_qsl(urlParse.query, keep_blank_values=True))
+            xsec_token = kvDist.get('xsec_token', "")
+            xsec_source = kvDist.get('xsec_source', "pc_search")
             while True:
                 success, msg, res_json = self.get_user_note_info(user_id, cursor, cookies_str, xsec_token, xsec_source, proxies)
                 if not success:
@@ -266,10 +266,9 @@ class XHS_Apis():
         try:
             urlParse = urllib.parse.urlparse(user_url)
             user_id = urlParse.path.split("/")[-1]
-            kvs = urlParse.query.split('&')
-            kvDist = {kv.split('=')[0]: kv.split('=')[1] for kv in kvs}
-            xsec_token = kvDist['xsec_token'] if 'xsec_token' in kvDist else ""
-            xsec_source = kvDist['xsec_source'] if 'xsec_source' in kvDist else "pc_user"
+            kvDist = dict(urllib.parse.parse_qsl(urlParse.query, keep_blank_values=True))
+            xsec_token = kvDist.get('xsec_token', "")
+            xsec_source = kvDist.get('xsec_source', "pc_user")
             while True:
                 success, msg, res_json = self.get_user_like_note_info(user_id, cursor, cookies_str, xsec_token,
                                                                       xsec_source, proxies)
@@ -329,10 +328,9 @@ class XHS_Apis():
         try:
             urlParse = urllib.parse.urlparse(user_url)
             user_id = urlParse.path.split("/")[-1]
-            kvs = urlParse.query.split('&')
-            kvDist = {kv.split('=')[0]: kv.split('=')[1] for kv in kvs}
-            xsec_token = kvDist['xsec_token'] if 'xsec_token' in kvDist else ""
-            xsec_source = kvDist['xsec_source'] if 'xsec_source' in kvDist else "pc_search"
+            kvDist = dict(urllib.parse.parse_qsl(urlParse.query, keep_blank_values=True))
+            xsec_token = kvDist.get('xsec_token', "")
+            xsec_source = kvDist.get('xsec_source', "pc_search")
             while True:
                 success, msg, res_json = self.get_user_collect_note_info(user_id, cursor, cookies_str, xsec_token,
                                                                          xsec_source, proxies)
@@ -363,8 +361,10 @@ class XHS_Apis():
         try:
             urlParse = urllib.parse.urlparse(url)
             note_id = urlParse.path.split("/")[-1]
-            kvs = urlParse.query.split('&')
-            kvDist = {kv.split('=')[0]: kv.split('=')[1] for kv in kvs}
+            kvDist = dict(urllib.parse.parse_qsl(urlParse.query, keep_blank_values=True))
+            xsec_token = kvDist.get('xsec_token')
+            if not xsec_token:
+                raise Exception("note_url 缺少 xsec_token（请使用带 ?xsec_token=... 的笔记链接）")
             api = f"/api/sns/web/v1/feed"
             data = {
                 "source_note_id": note_id,
@@ -377,7 +377,7 @@ class XHS_Apis():
                     "need_body_topic": "1"
                 },
                 "xsec_source": kvDist['xsec_source'] if 'xsec_source' in kvDist else "pc_search",
-                "xsec_token": kvDist['xsec_token']
+                "xsec_token": xsec_token
             }
             headers, cookies, data = generate_request_params(cookies_str, api, data, 'POST')
             response = requests.post(self.base_url + api, headers=headers, data=data, cookies=cookies, proxies=proxies)
@@ -634,8 +634,15 @@ class XHS_Apis():
             splice_api = splice_str(api, params)
             headers, cookies, data = generate_request_params(cookies_str, splice_api, '', 'GET')
             response = requests.get(self.base_url + splice_api, headers=headers, cookies=cookies, proxies=proxies)
-            res_json = response.json()
-            success, msg = res_json["success"], res_json["msg"]
+            try:
+                res_json = response.json()
+            except Exception:
+                raise Exception(f"HTTP {response.status_code} 非JSON响应: {response.text[:200]}")
+            success, msg = res_json.get("success", False), res_json.get("msg", "")
+            data = res_json.get("data")
+            if success and (not isinstance(data, dict) or "comments" not in data):
+                success = False
+                msg = msg or "评论接口响应缺少 data.comments"
         except Exception as e:
             success = False
             msg = str(e)
@@ -691,8 +698,15 @@ class XHS_Apis():
             splice_api = splice_str(api, params)
             headers, cookies, data = generate_request_params(cookies_str, splice_api, '', 'GET')
             response = requests.get(self.base_url + splice_api, headers=headers, cookies=cookies, proxies=proxies)
-            res_json = response.json()
-            success, msg = res_json["success"], res_json["msg"]
+            try:
+                res_json = response.json()
+            except Exception:
+                raise Exception(f"HTTP {response.status_code} 非JSON响应: {response.text[:200]}")
+            success, msg = res_json.get("success", False), res_json.get("msg", "")
+            data = res_json.get("data")
+            if success and (not isinstance(data, dict) or "comments" not in data):
+                success = False
+                msg = msg or "子评论接口响应缺少 data.comments"
         except Exception as e:
             success = False
             msg = str(e)
@@ -739,13 +753,15 @@ class XHS_Apis():
         try:
             urlParse = urllib.parse.urlparse(url)
             note_id = urlParse.path.split("/")[-1]
-            kvs = urlParse.query.split('&')
-            kvDist = {kv.split('=')[0]: kv.split('=')[1] for kv in kvs}
-            success, msg, out_comment_list = self.get_note_all_out_comment(note_id, kvDist['xsec_token'], cookies_str, proxies)
+            kvDist = dict(urllib.parse.parse_qsl(urlParse.query, keep_blank_values=True))
+            xsec_token = kvDist.get('xsec_token')
+            if not xsec_token:
+                raise Exception("note_url 缺少 xsec_token（请使用带 ?xsec_token=... 的笔记链接）")
+            success, msg, out_comment_list = self.get_note_all_out_comment(note_id, xsec_token, cookies_str, proxies)
             if not success:
                 raise Exception(msg)
             for comment in out_comment_list:
-                success, msg, new_comment = self.get_note_all_inner_comment(comment, kvDist['xsec_token'], cookies_str, proxies)
+                success, msg, new_comment = self.get_note_all_inner_comment(comment, xsec_token, cookies_str, proxies)
                 if not success:
                     raise Exception(msg)
         except Exception as e:
@@ -1012,7 +1028,3 @@ if __name__ == '__main__':
     note_url = r'https://www.xiaohongshu.com/explore/67d7c713000000000900e391?xsec_token=AB1ACxbo5cevHxV_bWibTmK8R1DDz0NnAW1PbFZLABXtE=&xsec_source=pc_user'
     success, msg, note_all_comment = xhs_apis.get_note_all_comment(note_url, cookies_str)
     logger.info(f'获取笔记评论结果 {json.dumps(note_all_comment, ensure_ascii=False)}: {success}, msg: {msg}')
-
-
-
-

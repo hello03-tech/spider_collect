@@ -87,6 +87,7 @@ python main.py
 - main.py中的代码是爬虫的入口，可以根据自己的需求进行修改
 - apis/xhs_pc_apis.py 中的代码包含了所有的api接口，可以根据自己的需求进行修改
 - apis/xhs_creator_apis.py 中的代码包含了小红书创作者平台的api接口，可以根据自己的需求进行修改
+- `python main.py --save json` 会把结果导出成 JSON，保存在 `datas/json_datas/<关键词>.json`，可以直接打开。
 
 
 ## 🍥日志
@@ -134,5 +135,4 @@ python main.py
 过期请加作者主页wx
 
 <img width="1000" height="1450" alt="5355a0f82398ee2052f2e659328d737b" src="./author/group.jpg" />
-
 
