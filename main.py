@@ -190,7 +190,11 @@ def main():
     程序入口，可通过命令行传入关键词和数量，默认爬取 "视觉UI风格" 相关的 10 条笔记信息。
     """
     args = parse_args()
-    cookies_str, base_path = init()
+    try:
+        cookies_str, base_path = init()
+    except Exception as exc:
+        logger.error(str(exc))
+        raise SystemExit(2)
     data_spider = Data_Spider()
 
     query = args.query.strip() or '视觉UI风格'
