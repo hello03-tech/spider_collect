@@ -1,44 +1,7 @@
-<p align="center">
-  <a href="https://github.com/cv-cat/Spider_XHS" target="_blank" align="center" alt="Go to XHS_Spider Website">
-    <picture>
-      <img width="220" src="https://github.com/user-attachments/assets/b817a5d2-4ca6-49e9-b7b1-efb07a4fb325" alt="Spider_XHS logo">
-    </picture>
-  </a>
-</p>
-
-
-<div align="center">
-    <a href="https://www.python.org/">
-        <img src="https://img.shields.io/badge/python-3.7%2B-blue" alt="Python 3.7+">
-    </a>
-    <a href="https://nodejs.org/zh-cn/">
-        <img src="https://img.shields.io/badge/nodejs-18%2B-blue" alt="NodeJS 18+">
-    </a>
-</div>
-
-
-
 # Spider_XHS
 
-**当前小红书爬虫主要参考作者：https://github.com/cv-cat/Spider_XHS，基于特定需求，做出一定的修改**
-
-## ⭐功能列表
-
-## 🌟 功能特性
-
-- ✅ **多维度数据采集**
-  - 用户主页信息
-  - 笔记详细内容
-  - 智能搜索结果抓取
-- 🚀 **高性能架构**
-  - 自动重试机制
-- 🔒 **安全稳定**
-  - 小红书最新API适配
-  - 异常处理机制
-  - proxy代理
-- 🎨 **便捷管理**
-  - 结构化目录存储
-  - 格式化输出（JSON/EXCEL/MEDIA）
+**当前小红书爬虫主要参考作者：https://github.com/cv-cat/Spider_XHS**
+**并基于特定需求，做出一定的修改**
 
 ## 🛠️ 快速开始
 ### ⛳运行环境
